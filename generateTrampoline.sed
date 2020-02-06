@@ -20,6 +20,14 @@
 	b generateTrampoline_expandRequirements
 # }}}
 
+# {{{ generateTrampoline_listTestFiles: list of unit-tests to load
+# Start with unit-tests/main.sed, proceeds as generateTrampoline_listFiles.
+:generateTrampoline_listTestFiles
+	z
+	s,^,unit-tests/main.sed\nframework/exceptions.sed\n=\n,
+	b generateTrampoline_expandRequirements
+# }}}
+
 # {{{ generateTrampoline_expandRequirements: expand requirements
 # Given a '=' terminated list of script file names, read out
 # requirements from them.
@@ -34,10 +42,11 @@
 	h
 	# remove everything but a name of the expanding file
 	s/^.*=\n([^\n]+).*$/\1/
-	s|^|sed -Ene '/^#\\s*Requires:/ {p;q} ; 5q' -- |
+	s|^|sed -Ene '/^#\\s*Requires:/ {H;d} ; 5,$ {g;p;q}' -- |
 	e
+	s/^\n+//
 	y/,/ /
-	s/^#\s*Requires:\s*//
+	s/^#\s*Requires:\s*//mg
 	s/\s*$/ /
 	s/\s\s*/\n/g
 	s/^/-\n/
@@ -78,7 +87,16 @@
 :generateTrampoline_allExpanded
 	# lift main.sed on top
 	s/^main\.sed\n//m
+	T generateTrampoline_allExpanded_noop
 	s/^/main.sed\n/
+	# reset conditional flag
+	:generateTrampoline_allExpanded_noop
+		t generateTrampoline_allExpanded_noop
+	# lift unit-tests/main.sed on top if in list
+	s|^unit-tests/main\.sed\n||m
+	T generateTrampoline_allExpanded_no_tests
+	s|^|unit-tests/main.sed\n|
+	:generateTrampoline_allExpanded_no_tests
 	h
 	b generateTrampoline_readLabels
 # }}}

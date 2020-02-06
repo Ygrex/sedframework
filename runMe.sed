@@ -12,11 +12,20 @@
 
 b runMe
 
+# {{{ runMyTests: runs main.sed from 'unit-tests' directory
+:runMyTests
+	z
+	s|^|sed -Ene 'b generateTrampoline_listTestFiles' -f ./framework/generateTrampoline.sed -- ./framework/generateTrampoline.sed|
+	b runMe_after_generateTrampoline
+# }}}
+
 # {{{ runMe: CLI entry point, framework launcher
 :runMe
 	W input
 	z
-	s|^|sed -Enf ./framework/generateTrampoline.sed -- ./framework/generateTrampoline.sed|e
+	s|^|sed -Enf ./framework/generateTrampoline.sed -- ./framework/generateTrampoline.sed|
+	:runMe_after_generateTrampoline
+	e
 	# load each script with -f option
 	s/^/-f /mg
 	# quit after the first module
@@ -30,6 +39,7 @@ b runMe
 	# Example command:
 	# sed -uEn -f main.sed -e Q2 -f a.sed -f b.sed -- ./input /dev/stdin >/dev/tty
 	e
+	W input
 	/^EC:1$/ Q1
 	/^EC:2$/ Q2
 	Q

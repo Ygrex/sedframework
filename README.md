@@ -5,6 +5,7 @@ Features:
 * modular project structure,
 * modules auto-loading by dependencies,
 * trampoline based on a call stack,
+* unit testing,
 * few functions for programming convenience:
   * debug and exception handling
   * pattern space snapshots saving/restoring
